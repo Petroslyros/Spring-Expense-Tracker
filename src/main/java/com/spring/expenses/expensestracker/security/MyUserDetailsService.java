@@ -1,7 +1,8 @@
 package com.spring.expenses.expensestracker.security;
 
 
-import com.petros.billsreminder.repository.UserRepository;
+
+import com.spring.expenses.expensestracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                                 .requestMatchers("/api/email/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll() // Allow open access to auth endpoints
+                                .requestMatchers("/api/register").permitAll()
 //                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/users/**")
 //                        .hasAuthority("ROLE_ADMIN")  // Only users with role ADMIN can DELETE on /users/**
                                 .anyRequest().authenticated() // All other requests require authentication

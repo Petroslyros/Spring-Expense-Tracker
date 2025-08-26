@@ -1,6 +1,5 @@
 package com.spring.expenses.expensestracker.security;
 
-import com.petros.billsreminder.security.authentication.JWTService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
