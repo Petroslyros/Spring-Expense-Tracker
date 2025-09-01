@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
+    //THE SERVICE THAT IS CALLED FROM THE AUTH CONTROLLER
 
     private final JWTService jwtService;                     // JWT utility service to generate tokens
     private final UserRepository userRepository;                   // User repository for database access (not used here directly)
