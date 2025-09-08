@@ -16,7 +16,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,10 +36,10 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection (careful in production)
-                .cors(Customizer.withDefaults())
+                .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(request -> request
                                 .requestMatchers("/api/email/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll() // Allow open access to auth endpoints
@@ -50,6 +52,9 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless sessions for JWT
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter before Spring Security auth filter
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(myCustomAuthenticationEntryPoint())
+                        .accessDeniedHandler(myCustomAccessDeniedHandler()))
                 .build();
     }
 
@@ -58,9 +63,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173", // React dev server
-                "https://coding-factory.apps.gov.gr",
-                "https://test-coding-factory.apps.gov.gr"
+                "http://localhost:5173" // React dev server
         ));
         configuration.setAllowedMethods(List.of("*")); // allow all HTTP methods
         configuration.setAllowedHeaders(List.of("*")); // allow all headers
@@ -100,5 +103,18 @@ public class SecurityConfig {
         // Returns a BCryptPasswordEncoder with strength 12
         // BCrypt is a strong hashing algorithm recommended for storing passwords securely.
         return new BCryptPasswordEncoder(12);
+    }
+    @Bean
+    public AccessDeniedHandler myCustomAccessDeniedHandler() {
+        return new CustomAccessDeniedHandler();
+    }
+
+    // AuthenticationEntryPoint (Handles 401 Unauthorized)
+    // Triggered when an unauthenticated user tries to access a secured resource.
+    // Default behavior: Redirects to login page (for web apps) or returns HTTP 401 (for APIs).
+    // want retrn to a structured JSON response for APIs:
+    @Bean
+    public AuthenticationEntryPoint myCustomAuthenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint();
     }
 }
