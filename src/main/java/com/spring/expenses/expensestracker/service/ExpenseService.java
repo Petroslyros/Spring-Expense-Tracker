@@ -12,6 +12,9 @@ import com.spring.expenses.expensestracker.repository.ExpensesRepository;
 import com.spring.expenses.expensestracker.repository.ExpenseCategoryRepository;
 import com.spring.expenses.expensestracker.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.converters.models.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -110,5 +113,17 @@ public class ExpenseService implements IExpenseService {
         return expenses.stream()
                 .map(mapper::mapExpenseToExpenseReadOnlyDTO)
                 .toList();
+    }
+
+    public Page<ExpenseReadOnlyDTO> getAllExpensesFiltered(Specification<Expense> spec, Pageable pageable) {
+        Page<Expense> expenses = expensesRepository.findAll(spec, (org.springframework.data.domain.Pageable) pageable);
+        return expenses.map(mapper::mapExpenseToExpenseReadOnlyDTO);
+    }
+
+
+    public ExpenseReadOnlyDTO getExpenseById(Long id) {
+        Expense expense = expensesRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
+        return mapper.mapExpenseToExpenseReadOnlyDTO(expense);
     }
 }
