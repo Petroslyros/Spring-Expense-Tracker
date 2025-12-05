@@ -11,6 +11,6 @@ public interface ExpensesRepository extends JpaRepository<Expense,Long> {
 
     List<Expense> findByUserId(Long userId);
 
-    @Query("SELECT r FROM Expense r WHERE r.user.id = :userId AND r.category = :category")
-    List<Expense> findByUserIdAndCategory(Long userId, Category category);
+    List<Expense> findByUserIdAndExpenseCategoryId(Long userId, Long expenseCategoryId);
+
 }

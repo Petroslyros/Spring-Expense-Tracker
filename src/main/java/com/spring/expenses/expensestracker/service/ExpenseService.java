@@ -1,14 +1,15 @@
 package com.spring.expenses.expensestracker.service;
 
-import com.spring.expenses.expensestracker.core.enums.Category;
 import com.spring.expenses.expensestracker.core.exceptions.ExpenseNotFoundException;
 import com.spring.expenses.expensestracker.core.exceptions.UserNotFoundException;
 import com.spring.expenses.expensestracker.dto.ExpenseInsertDTO;
 import com.spring.expenses.expensestracker.dto.ExpenseReadOnlyDTO;
 import com.spring.expenses.expensestracker.mapper.Mapper;
 import com.spring.expenses.expensestracker.model.Expense;
+import com.spring.expenses.expensestracker.model.ExpenseCategory;
 import com.spring.expenses.expensestracker.model.User;
 import com.spring.expenses.expensestracker.repository.ExpensesRepository;
+import com.spring.expenses.expensestracker.repository.ExpenseCategoryRepository;
 import com.spring.expenses.expensestracker.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class ExpenseService implements IExpenseService {
     private final ExpensesRepository expensesRepository;
     private final ExpenseCategoryRepository expenseCategoryRepository;
     private final UserRepository userRepository;
+    private final Mapper mapper;
 
     @Override
     public ExpenseReadOnlyDTO createExpense(ExpenseInsertDTO expenseInsertDTO) throws UserNotFoundException {
@@ -34,16 +36,16 @@ public class ExpenseService implements IExpenseService {
                     .orElseThrow(() -> new RuntimeException("Category not found"));
         }
 
-        Expense expense = Mapper.mapExpenseInsertDTOToExpense(expenseInsertDTO, user, category);
+        Expense expense = mapper.mapExpenseInsertDTOToExpense(expenseInsertDTO, user, category);
         Expense savedExpense = expensesRepository.save(expense);
 
-        return Mapper.mapExpenseToExpenseReadOnlyDTO(savedExpense);
+        return mapper.mapExpenseToExpenseReadOnlyDTO(savedExpense);
     }
 
     @Override
     public List<ExpenseReadOnlyDTO> getAllExpenses() {
         return expensesRepository.findAll().stream()
-                .map(Mapper::mapExpenseToExpenseReadOnlyDTO)
+                .map(mapper::mapExpenseToExpenseReadOnlyDTO)
                 .toList();
     }
 
@@ -54,7 +56,7 @@ public class ExpenseService implements IExpenseService {
 
         List<Expense> expenses = expensesRepository.findByUserId(userId);
         return expenses.stream()
-                .map(Mapper::mapExpenseToExpenseReadOnlyDTO)
+                .map(mapper::mapExpenseToExpenseReadOnlyDTO)
                 .toList();
     }
 
@@ -84,7 +86,7 @@ public class ExpenseService implements IExpenseService {
         existingExpense.setUser(user);
         Expense updatedExpense = expensesRepository.save(existingExpense);
 
-        return Mapper.mapExpenseToExpenseReadOnlyDTO(updatedExpense);
+        return mapper.mapExpenseToExpenseReadOnlyDTO(updatedExpense);
     }
 
     @Override
@@ -106,7 +108,7 @@ public class ExpenseService implements IExpenseService {
 
         List<Expense> expenses = expensesRepository.findByUserIdAndExpenseCategoryId(userId, categoryId);
         return expenses.stream()
-                .map(Mapper::mapExpenseToExpenseReadOnlyDTO)
+                .map(mapper::mapExpenseToExpenseReadOnlyDTO)
                 .toList();
     }
 }

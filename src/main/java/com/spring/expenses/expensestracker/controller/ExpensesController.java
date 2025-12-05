@@ -1,5 +1,6 @@
 package com.spring.expenses.expensestracker.controller;
 
+import com.spring.expenses.expensestracker.core.exceptions.UserNotFoundException;
 import com.spring.expenses.expensestracker.dto.ExpenseReadOnlyDTO;
 import com.spring.expenses.expensestracker.service.ExpenseService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class ExpensesController {
     private final ExpenseService expenseService;
 
     @GetMapping("/users/{userId}/expenses")
-    public ResponseEntity<List<ExpenseReadOnlyDTO>> getExpensesPerUserId (@PathVariable Long userId) {
+    public ResponseEntity<List<ExpenseReadOnlyDTO>> getExpensesPerUserId (@PathVariable Long userId) throws UserNotFoundException {
         List<ExpenseReadOnlyDTO> expenses = expenseService.getExpenseByUserId(userId);
         return ResponseEntity.ok(expenses);
     }

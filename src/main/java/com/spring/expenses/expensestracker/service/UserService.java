@@ -11,19 +11,17 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class UserService implements IUserService {
 
-
     private final UserRepository userRepository;
     private final Mapper mapper;
     private final PasswordEncoder passwordEncoder;
 
-    public List<User> getAllUsers(){
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
@@ -37,23 +35,23 @@ public class UserService implements IUserService {
             throw new AppObjectAlreadyExists("Username", "Username already in use");
         }
 
-        User user = Mapper.mapUserInsertDTOToUser(dto);
+        User user = mapper.mapUserInsertDTOToUser(dto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         // Don't manually set insertedAt/modifiedAt - Hibernate handles this via @CreatedDate/@LastModifiedDate
         User savedUser = userRepository.save(user);
 
-        return Mapper.mapUserToUserReadOnlyDTO(savedUser);
+        return mapper.mapUserToUserReadOnlyDTO(savedUser);
     }
 
-
+    @Override
     public UserReadOnlyDTO getUserById(Long id) throws UserNotFoundException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
-        return Mapper.mapUserToUserReadOnlyDTO(user);
+        return mapper.mapUserToUserReadOnlyDTO(user);
     }
 
-
+    @Override
     public void deleteUser(Long id) throws UserNotFoundException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));

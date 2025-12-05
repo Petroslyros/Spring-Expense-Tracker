@@ -7,7 +7,9 @@ import com.spring.expenses.expensestracker.dto.ExpenseReadOnlyDTO;
 import com.spring.expenses.expensestracker.model.User;
 import com.spring.expenses.expensestracker.model.Expense;
 import com.spring.expenses.expensestracker.model.ExpenseCategory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class Mapper {
 
     // User Mappings
@@ -46,7 +48,7 @@ public class Mapper {
         return expense;
     }
 
-    public static ExpenseReadOnlyDTO mapExpenseToExpenseReadOnlyDTO(Expense expense) {
+    public ExpenseReadOnlyDTO mapExpenseToExpenseReadOnlyDTO(Expense expense) {
         String categoryName = expense.getExpenseCategory() != null ?
                 expense.getExpenseCategory().getName() : "Uncategorized";
 
