@@ -20,55 +20,71 @@ import java.util.List;
 public class ExpenseService implements IExpenseService {
 
     private final ExpensesRepository expensesRepository;
+    private final ExpenseCategoryRepository expenseCategoryRepository;
     private final UserRepository userRepository;
-    private final Mapper mapper;
-
 
     @Override
-    public ExpenseReadOnlyDTO createExpense(ExpenseInsertDTO expenseInsertDTO) {
+    public ExpenseReadOnlyDTO createExpense(ExpenseInsertDTO expenseInsertDTO) throws UserNotFoundException {
         User user = userRepository.findById(expenseInsertDTO.userId())
-                .orElseThrow(() -> new RuntimeException("User not found!"));
+                .orElseThrow(() -> new UserNotFoundException(expenseInsertDTO.userId()));
 
-        Expense expense = mapper.expenseReadOnlyToEntity(expenseInsertDTO,user);
-        expense.setUser(user);
+        ExpenseCategory category = null;
+        if (expenseInsertDTO.expenseCategoryId() != null) {
+            category = expenseCategoryRepository.findById(expenseInsertDTO.expenseCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+        }
 
+        Expense expense = Mapper.mapExpenseInsertDTOToExpense(expenseInsertDTO, user, category);
         Expense savedExpense = expensesRepository.save(expense);
 
-        return mapper.expenseEntityToReadOnlyDTO(savedExpense);
+        return Mapper.mapExpenseToExpenseReadOnlyDTO(savedExpense);
     }
 
     @Override
     public List<ExpenseReadOnlyDTO> getAllExpenses() {
         return expensesRepository.findAll().stream()
-                .map(mapper::expenseEntityToReadOnlyDTO)
+                .map(Mapper::mapExpenseToExpenseReadOnlyDTO)
                 .toList();
     }
 
     @Override
-    public List<ExpenseReadOnlyDTO> getExpenseByUserId(Long userId) {
+    public List<ExpenseReadOnlyDTO> getExpenseByUserId(Long userId) throws UserNotFoundException {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
         List<Expense> expenses = expensesRepository.findByUserId(userId);
         return expenses.stream()
-                .map(mapper::expenseEntityToReadOnlyDTO)
+                .map(Mapper::mapExpenseToExpenseReadOnlyDTO)
                 .toList();
     }
 
     @Override
-    public ExpenseReadOnlyDTO updateExpense(Long id, ExpenseInsertDTO expenseInsertDTO) throws ExpenseNotFoundException, UserNotFoundException {
+    public ExpenseReadOnlyDTO updateExpense(Long id, ExpenseInsertDTO expenseInsertDTO)
+            throws ExpenseNotFoundException, UserNotFoundException {
+
         Expense existingExpense = expensesRepository.findById(id)
-                .orElseThrow(() -> new ExpenseNotFoundException(id)); // if expense exists it is stored in existingExpense
+                .orElseThrow(() -> new ExpenseNotFoundException(id));
 
         User user = userRepository.findById(expenseInsertDTO.userId())
-                .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(() -> new UserNotFoundException(expenseInsertDTO.userId()));
 
         existingExpense.setTitle(expenseInsertDTO.title());
         existingExpense.setAmount(expenseInsertDTO.amount());
-        existingExpense.setCategory(expenseInsertDTO.category());
         existingExpense.setDate(expenseInsertDTO.date());
+
+        // Handle category change
+        if (expenseInsertDTO.expenseCategoryId() != null) {
+            ExpenseCategory category = expenseCategoryRepository.findById(expenseInsertDTO.expenseCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found"));
+            existingExpense.setExpenseCategory(category);
+        } else {
+            existingExpense.setExpenseCategory(null);
+        }
+
         existingExpense.setUser(user);
-
         Expense updatedExpense = expensesRepository.save(existingExpense);
-        return mapper.expenseEntityToReadOnlyDTO(updatedExpense);
 
+        return Mapper.mapExpenseToExpenseReadOnlyDTO(updatedExpense);
     }
 
     @Override
@@ -76,15 +92,21 @@ public class ExpenseService implements IExpenseService {
         Expense expense = expensesRepository.findById(id)
                 .orElseThrow(() -> new ExpenseNotFoundException(id));
 
-        expensesRepository.delete(expense);
+        // Soft delete - set isDeleted flag
+        expense.setIsDeleted(true);
+        expensesRepository.save(expense);
     }
 
     @Override
-    public List<ExpenseReadOnlyDTO> getExpenseByUserIdAndCategory(Long userId, Category category) {
-        List<Expense> expenses = expensesRepository.findByUserIdAndCategory(userId,category);
+    public List<ExpenseReadOnlyDTO> getExpenseByUserIdAndCategory(Long userId, Long categoryId)
+            throws UserNotFoundException {
 
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        List<Expense> expenses = expensesRepository.findByUserIdAndExpenseCategoryId(userId, categoryId);
         return expenses.stream()
-                .map(mapper::expenseEntityToReadOnlyDTO)
+                .map(Mapper::mapExpenseToExpenseReadOnlyDTO)
                 .toList();
     }
 }

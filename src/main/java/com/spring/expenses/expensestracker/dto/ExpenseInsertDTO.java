@@ -1,19 +1,23 @@
 package com.spring.expenses.expensestracker.dto;
 
-import com.spring.expenses.expensestracker.core.enums.Category;
-
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record ExpenseInsertDTO(
-
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt,
+        @NotNull
         String title,
-        BigDecimal amount,
-        Category category,
-        LocalDateTime date,
-        Long userId
 
-) {
-}
+        @NotNull
+        @Positive
+        BigDecimal amount,
+
+        @NotNull
+        LocalDateTime date,
+
+        Long expenseCategoryId,  // Changed from Category enum to category ID
+
+        @NotNull
+        Long userId
+) {}

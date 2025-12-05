@@ -1,6 +1,5 @@
-package com.spring.expenses.expensestracker.core;
+package com.spring.expenses.expensestracker.core.exceptions;
 
-import com.spring.expenses.expensestracker.core.exceptions.*;
 import com.spring.expenses.expensestracker.dto.ResponseMessageDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;

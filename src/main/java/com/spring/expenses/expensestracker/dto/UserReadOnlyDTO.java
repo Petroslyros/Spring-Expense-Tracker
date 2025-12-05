@@ -1,21 +1,14 @@
 package com.spring.expenses.expensestracker.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserReadOnlyDTO {
+public record UserReadOnlyDTO(
+        Long id,
+        String username,
+        String email,
+        String firstname,
+        String lastname,
+        LocalDateTime insertedAt,
+        LocalDateTime modifiedAt
+) {}
 
-    private Long id;
-    private String username;
-    private String email;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-}

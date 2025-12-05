@@ -29,25 +29,36 @@ public class UserService implements IUserService {
 
     @Override
     public UserReadOnlyDTO registerUser(UserInsertDTO dto) throws AppObjectAlreadyExists {
-        if(userRepository.findByEmail(dto.email()).isPresent()) {
-            throw new AppObjectAlreadyExists("Email","Email already in use");
+        if (userRepository.findByEmail(dto.email()).isPresent()) {
+            throw new AppObjectAlreadyExists("Email", "Email already in use");
         }
 
-        User user = mapper.mapDTOToUserEntity(dto);
+        if (userRepository.findByUsername(dto.username()).isPresent()) {
+            throw new AppObjectAlreadyExists("Username", "Username already in use");
+        }
 
+        User user = Mapper.mapUserInsertDTOToUser(dto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
+        // Don't manually set insertedAt/modifiedAt - Hibernate handles this via @CreatedDate/@LastModifiedDate
         User savedUser = userRepository.save(user);
 
-        return mapper.mapUserEntityToReadOnlyDTO(savedUser);
+        return Mapper.mapUserToUserReadOnlyDTO(savedUser);
     }
+
+
+    public UserReadOnlyDTO getUserById(Long id) throws UserNotFoundException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
+        return Mapper.mapUserToUserReadOnlyDTO(user);
+    }
+
 
     public void deleteUser(Long id) throws UserNotFoundException {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
-
-        userRepository.delete(user);
+        // Soft delete - set isDeleted flag
+        user.setIsDeleted(true);
+        userRepository.save(user);
     }
 }

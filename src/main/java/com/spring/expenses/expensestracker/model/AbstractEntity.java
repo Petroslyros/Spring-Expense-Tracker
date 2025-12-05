@@ -20,12 +20,17 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class AbstractEntity {
-
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "inserted_at", nullable = false, updatable = false)
+    private LocalDateTime insertedAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "modified_at")
+    private LocalDateTime modifiedAt;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;  // soft delete
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }

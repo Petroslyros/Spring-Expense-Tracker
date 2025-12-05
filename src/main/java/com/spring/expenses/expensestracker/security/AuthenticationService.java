@@ -32,7 +32,7 @@ public class AuthenticationService {
         User user = (User) authentication.getPrincipal();
 
         // Generate JWT token with username and role info
-        String token = jwtService.generateToken(authentication.getName(), user.getRole().name());
+        String token = jwtService.generateToken(authentication.getName(), user.getUserRole().name());
 
         // Return response DTO with user's first and last names plus the JWT token
         return new AuthenticationResponseDTO(user.getUsername(), token);
