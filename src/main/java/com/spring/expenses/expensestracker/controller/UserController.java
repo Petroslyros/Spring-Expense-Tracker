@@ -35,7 +35,7 @@ public class UserController {
         return new ResponseEntity<>(userService.registerUser(dto), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) throws UserNotFoundException {
 

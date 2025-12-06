@@ -38,20 +38,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
         return http
-                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection (careful in production)
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(request -> request
-                                .requestMatchers("/api/email/**").permitAll()
-                                .requestMatchers("/api/auth/**").permitAll() // Allow open access to auth endpoints
-                                .requestMatchers("/api/register").permitAll()
-//                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/users/**")
-//                        .hasAuthority("ROLE_ADMIN")  // Only users with role ADMIN can DELETE on /users/**
-                                .anyRequest().authenticated() // All other requests require authentication
+                        // Swagger UI and OpenAPI documentation endpoints - PUBLIC ACCESS
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs.yaml"
+                        ).permitAll()
+                        // Authentication endpoints - PUBLIC ACCESS
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/register").permitAll()
+                        .requestMatchers("/api/email/**").permitAll()
+                        // All other requests require authentication
+                        .anyRequest().authenticated()
                 )
-                .httpBasic(Customizer.withDefaults()) // Enable basic auth (useful for testing with Postman)
+                .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless sessions for JWT
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter before Spring Security auth filter
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(myCustomAuthenticationEntryPoint())
                         .accessDeniedHandler(myCustomAccessDeniedHandler()))

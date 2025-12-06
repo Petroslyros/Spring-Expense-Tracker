@@ -8,8 +8,12 @@ import com.spring.expenses.expensestracker.mapper.Mapper;
 import com.spring.expenses.expensestracker.model.User;
 import com.spring.expenses.expensestracker.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.converters.models.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -58,5 +62,10 @@ public class UserService implements IUserService {
         // Soft delete - set isDeleted flag
         user.setIsDeleted(true);
         userRepository.save(user);
+    }
+    @Transactional(readOnly = true)
+    public Page<UserReadOnlyDTO> getAllUsersFiltered(Specification<User> spec, Pageable pageable) {
+        Page<User> users = userRepository.findAll(spec, (org.springframework.data.domain.Pageable) pageable);
+        return users.map(mapper::mapUserToUserReadOnlyDTO);
     }
 }
